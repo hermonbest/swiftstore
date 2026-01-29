@@ -1,8 +1,5 @@
-// This is your production-ready schema for SwiftStore
-
 generator client {
   provider = "prisma-client-js"
-   output   = "../generated/prisma"
 }
 
 datasource db {
