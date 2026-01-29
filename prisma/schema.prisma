@@ -1,0 +1,139 @@
+// This is your production-ready schema for SwiftStore
+
+generator client {
+  provider = "prisma-client-js"
+   output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  }
+
+enum ProductType {
+  PHYSICAL
+  DIGITAL
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  SHIPPED
+  DELIVERED
+}
+
+// 1. Merchant Management
+model User {
+  id    String  @id @default(cuid())
+  email String  @unique
+  role  String  @default("USER") //
+  stores Store[]
+}
+
+model Store {
+  id           String   @id @default(cuid())
+  name         String
+  subdomain    String   @unique // e.g., "aisha"
+  customDomain String?  @unique
+  logo         String?
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+  
+  products     Product[]
+  orders       Order[]
+  discounts    Discount[]
+  customers    Customer[]
+  messages     ChatMessage[]
+  
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+// 2. Inventory & Products
+model Product {
+  id          String      @id @default(cuid())
+  storeId     String
+  store       Store       @relation(fields: [storeId], references: [id])
+  name        String
+  description String
+  images      String[]    // Array of Cloudinary/UploadThing URLs
+  type        ProductType @default(PHYSICAL)
+  
+  // Formal relationship for variants (Sizes/Colors)
+  variants    ProductVariant[]
+  discounts   Discount[]
+  
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model ProductVariant {
+  id        String   @id @default(cuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  name      String   // e.g., "Large / Red"
+  price     Decimal  @db.Decimal(10, 2)
+  stock     Int      @default(0) // Automatic stock deduction happens here
+  
+  orderItems OrderItem[]
+}
+
+// 3. Marketing & Discounts
+model Discount {
+  id          String   @id @default(cuid())
+  storeId     String
+  store       Store    @relation(fields: [storeId], references: [id])
+  productId   String?
+  product     Product? @relation(fields: [productId], references: [id])
+  code        String   // e.g., "SAVE20"
+  percentage  Int      // e.g., 20 for 20%
+  expiresAt   DateTime
+  isActive    Boolean  @default(true)
+}
+
+// 4. Sales & Customers
+model Customer {
+  id        String   @id @default(cuid())
+  storeId   String
+  store     Store    @relation(fields: [storeId], references: [id])
+  email     String
+  orders    Order[]
+  
+  @@unique([storeId, email]) // A customer is unique to a specific store
+}
+
+model Order {
+  id            String      @id @default(cuid())
+  storeId       String
+  store         Store       @relation(fields: [storeId], references: [id])
+  customerId    String
+  customer      Customer    @relation(fields: [customerId], references: [id])
+  totalAmount   Decimal     @db.Decimal(10, 2)
+  status        OrderStatus @default(PENDING) //
+  items         OrderItem[]
+  
+  paymentId     String?     // Startbutton reference
+  createdAt     DateTime    @default(now())
+}
+
+model OrderItem {
+  id               String         @id @default(cuid())
+  orderId          String
+  order            Order          @relation(fields: [orderId], references: [id])
+  variantId        String
+  variant          ProductVariant @relation(fields: [variantId], references: [id])
+  quantity         Int
+  // "Snapshot" fields to freeze data at time of purchase
+  priceAtPurchase  Decimal        @db.Decimal(10, 2)
+  variantName      String         // e.g., "Large / Red"
+}
+
+// 5. Communication
+model ChatMessage {
+  id        String   @id @default(cuid())
+  storeId   String
+  store     Store    @relation(fields: [storeId], references: [id])
+  content   String
+  senderId  String   // Can be 'merchant' or 'customer-email'
+  isAdmin   Boolean  @default(false)
+  timestamp DateTime @default(now())
+}

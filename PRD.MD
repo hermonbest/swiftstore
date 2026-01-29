@@ -1,1 +1,127 @@
-PRD: SwiftStore (Multi-Tenant E-commerce Platform)1. Project OverviewSwiftStore is a "SaaS for E-commerce" (similar to Shopify or Bumpa). It allows any merchant to sign up and instantly launch a hosted web store with a custom subdomain, inventory management, and automated payment processing.2. Target AudienceMerchants: Small to medium business owners selling physical or digital goods.Customers: People who visit the merchants' storefronts to buy products.3. Core Functional RequirementsA. The Merchant Dashboard (The "Control Center")Onboarding: A multi-step form to set up store name, currency, and subdomain.Product Management: Full CRUD (Create, Read, Update, Delete) for products. Support for:Images (Cloudinary/UploadThing).Variants (Sizes, Colors).Physical vs. Digital types.Inventory Tracking: Automatic stock deduction on successful payment.Analytics: Visual charts showing daily/weekly revenue and order volume.Discount Engine: Create coupon codes (e.g., SAVE20) with expiry dates.Order Management: View orders, change status (Pending → Shipped → Delivered), and generate PDF receipts.B. The Storefront (The "Customer-Facing Site")Dynamic Subdomains: merchantname.swiftstore.com serves that specific merchant's products.Shopping Cart: Persistent cart (using LocalStorage or Cookies).Checkout Flow: Integration with Startbutton Africa for multi-currency payments.Real-time Chat: A floating chat bubble for customers to talk to the merchant.C. Admin & InfrastructureAuthentication: Social login (Google) + Role-Based Access Control (RBAC).Multi-tenancy Logic: Middleware to route traffic based on the URL.4. User Flows (The Logic Path)Flow 1: Merchant OnboardingSign Up: Merchant signs up via Clerk (Google Auth).Create Store: User enters Store Name (Aisha's Boutique) and Subdomain (aisha).Validation: System checks if aisha.swiftstore.com is available.Dashboard: Redirected to the dashboard to add their first product.Flow 2: Customer PurchaseDiscovery: Customer visits aisha.swiftstore.com.Selection: Browses products, selects a "Large Red Dress," and adds to cart.Checkout: Customer enters email and shipping address.Payment: Clicks "Pay," redirected to Startbutton Africa.Confirmation: On success, the customer sees a "Thank You" page and receives a PDF Receipt.Notification: The Merchant gets a real-time notification of a new sale.5. Technical Stack (Production Ready)LayerTechnologyFrameworkNext.js 14+ (App Router)AuthClerk (Handles sessions, social login, and RBAC)DatabasePostgreSQL (Hosted on Neon or Supabase)ORMPrisma (For type-safe database queries)StylingTailwind CSS + Shadcn UI (For a pro look)PaymentsStartbutton AfricaReal-timePusher (For the chat system)File StorageUploadThing (Product images/Digital downloads)6. Database Schema Design (The Foundation)To make this multi-tenant, every table (except User) must have a storeId.User: id, email, role (ADMIN/USER)Store: id, name, subdomain, customDomain, logo, userIdProduct: id, storeId, name, description, price, stock, images[], type(PHYSICAL/DIGITAL)Order: id, storeId, customerEmail, totalAmount, status(PAID/PENDING), items[]ChatMessage: id, storeId, senderId, receiverId, content, timestamp7. Next.js Architecture StrategyThe Middleware ApproachYou will use a file named middleware.ts in your Next.js root. This file intercepts every request.If the URL is app.swiftstore.com → Show the Dashboard.If the URL is nike.swiftstore.com → Rewrite the URL internally to show the Storefront for "Nike."8. Development Phases (The Build Plan)Phase 1 (Foundation): Setup Next.js, Clerk Auth, and Database connection.Phase 2 (Dashboard): Build the "Create Store" flow and Product CRUD.Phase 3 (Multi-tenancy): Implement the Middleware to handle subdomains.Phase 4 (Storefront): Build the public-facing product catalog and shopping cart.Phase 5 (Payments & PDF): Integrate Startbutton and generate PDF invoices using react-pdf.Phase 6 (Real-time): Add the Chat bubble using SOCKET.IO.
+# PRD: SwiftStore — Multi‑Tenant E‑commerce Platform
+
+## 1. Overview
+SwiftStore is a SaaS e‑commerce platform enabling merchants to launch hosted storefronts (merchantname.swiftstore.com) with inventory, payments, and real‑time features.
+
+## 2. Goals & Success Metrics
+- Goal: Enable merchants to create a live store in < 10 minutes.
+- Goal: Reliable multi‑tenant routing (subdomain per store).
+- Success metrics: Time-to-first-product, conversion rate, avg. page load < 200ms.
+
+## 3. Personas
+- Merchant: small/medium business owner who lists products and manages orders.
+- Customer: shopper who browses storefronts and completes purchases.
+
+## 4. Core Features (High Level)
+- Merchant Dashboard: onboarding, product CRUD, inventory, discounts, analytics, order management, PDF receipts.
+- Storefront: subdomain routing, product catalog, cart, checkout (Startbutton), persistent cart, real‑time chat.
+- Admin/Platform: RBAC via Clerk, multi‑tenant middleware, file storage integration.
+
+## 5. User Flows (Key Paths)
+- Merchant Onboarding: Sign up (Clerk) → Create Store (name, subdomain, currency) → Dashboard.
+- Add Product: Create product with images, variants, stock → Publish.
+- Customer Purchase: Visit subdomain → Add to cart → Checkout → Pay via Startbutton → Thank You + PDF receipt.
+- Merchant Notification: Real‑time notification on successful sale.
+
+## 6. Tech Stack
+- Frontend: Next.js 14+ (App Router), Tailwind CSS, Shadcn UI
+- Auth: Clerk (Google/social + RBAC)
+- Database: PostgreSQL (Neon/Supabase)
+- ORM: Prisma
+- Payments: Startbutton Africa
+- Realtime: Pusher / Socket.IO
+- Files: UploadThing or Cloudinary
+
+## 7. Data Model (summary)
+All tenant data includes `storeId` except `User`.
+- User, Store, Product, ProductVariant, Discount, Customer, Order, OrderItem, ChatMessage.
+
+## 8. Architecture Notes
+- Middleware (`middleware.ts`) handles subdomain routing and rewrites to storefront or dashboard.
+- Use a single Postgres DB with `storeId` scoping and database indexes for tenant queries.
+- Prisma as the single source of truth for schema and migrations.
+
+## 9. Development Roadmap — Phases, Deliverables and Steps
+
+**Phase 1 — Foundation (env, auth, db)**
+- Deliverables: Next.js app, Clerk integration (dev keys), Prisma schema & DB connection, Tailwind setup.
+- Steps:
+	1. Initialize Next.js app with App Router and TypeScript.
+	2. Add Clerk auth skeleton and test sign-in flows.
+	3. Finalize Prisma schema and create initial migration.
+	4. Add Tailwind + global styles.
+	5. Provide `.env.example` and README run steps.
+- Acceptance: Merchant can sign up and see a placeholder dashboard; DB migrations succeed.
+
+**Phase 2 — Merchant Dashboard (product & store management)**
+- Deliverables: Create store flow, product CRUD, variant support, image uploads (dev stub).
+- Steps:
+	1. Build multi‑step Create Store UI and subdomain availability check.
+	2. Implement Product model pages (list, create, edit, delete).
+	3. Add ProductVariant CRUD and stock field updates.
+	4. Wire image upload integration (UploadThing or stubbed S3/Cloudinary).
+	5. Implement inventory decrement on order (stub order flow).
+- Acceptance: Merchant creates store and product with variants; product appears in storefront dev route.
+
+**Phase 3 — Multi‑tenancy & Routing**
+- Deliverables: Middleware routing, tenant context, per‑store data isolation pattern.
+- Steps:
+	1. Implement `middleware.ts` to detect subdomain and rewrite requests.
+	2. Create tenant context provider (server + client) to resolve `storeId` from host.
+	3. Secure API routes to require matching `storeId` scopes.
+	4. Add tests for routing and data isolation.
+- Acceptance: Requests to `aisha.swiftstore.com` return Aisha's storefront; dashboard under app domain.
+
+**Phase 4 — Storefront & Checkout**
+- Deliverables: Public catalog, cart persistence, checkout integration with Startbutton.
+- Steps:
+	1. Build storefront product listing and product detail pages.
+	2. Implement persistent cart (LocalStorage + server fallback).
+	3. Integrate Startbutton payment flow and webhook handler.
+	4. Generate order record on payment success and show Thank You page.
+- Acceptance: End-to-end purchase flow completes in staging (test payments), orders created.
+
+**Phase 5 — Payments, Receipts & Notifications**
+- Deliverables: PDF receipts, merchant notifications, order lifecycle updates.
+- Steps:
+	1. Generate PDF receipts using `react-pdf` or server-side renderer.
+	2. Send transactional emails (receipt) and show in-app notifications.
+	3. Implement order status updates (Pending → Shipped → Delivered).
+- Acceptance: Customer receives PDF receipt; merchant sees real‑time sale notification.
+
+**Phase 6 — Real‑time Chat & Analytics**
+- Deliverables: Floating chat, analytics dashboard (basic charts).
+- Steps:
+	1. Implement chat messaging using Pusher or Socket.IO; persist messages.
+	2. Add analytics endpoints (daily revenue, orders) and basic chart components.
+	3. Optimize for scale and add rate limits where needed.
+- Acceptance: Chat works in staging; analytics renders accurate trends for sample data.
+
+**Phase 7 — Hardening & Launch**
+- Deliverables: Observability, backups, secrets rotation, domain setup flow, billing.
+- Steps:
+	1. Add logging, metrics, and error tracking (Sentry/Datadog).
+	2. Add DB backups and migrations runbook.
+	3. Implement custom domain onboarding and SSL provisioning.
+	4. Prepare billing and pricing plans for merchants.
+- Acceptance: Platform ready for alpha merchants; runbook validated.
+
+## 10. Milestones & Timeline (example)
+- Month 0–1: Phase 1 complete
+- Month 1–2: Phase 2 complete
+- Month 2–3: Phase 3 & 4 (alpha)
+- Month 3–4: Phase 5 & 6 (beta)
+- Month 4–5: Phase 7 (launch readiness)
+
+## 11. Risks & Mitigations
+- Risk: Tenant data leakage — Mitigation: strict `storeId` scoping and integration tests.
+- Risk: Payment edge cases per region — Mitigation: test Startbutton webhooks and error handling.
+- Risk: Image storage costs — Mitigation: optional CDN + compressed images + usage quotas.
+
+## 12. Next Actions (short term)
+1. Confirm priority MVP features (minimum product set for merchant onboarding + checkout).
+2. Finalize Prisma schema and run initial migration in dev.
+3. Implement middleware and basic tenant context.
+
+---
+Updated PRD with phases and actionable steps. Use this as the roadmap for sprints and tickets.
