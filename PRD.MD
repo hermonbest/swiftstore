@@ -54,7 +54,7 @@ All tenant data includes `storeId` except `User`.
 - Acceptance: Merchant can sign up and see a placeholder dashboard; DB migrations succeed.
 
 **Phase 2 — Merchant Dashboard (product & store management)**
-- Deliverables: Create store flow, product CRUD, variant support, image uploads (dev stub).
+- Deliverables: Create store flow, product CRUD, variant support, imag e uploads (dev stub).
 - Steps:
 	1. Build multi‑step Create Store UI and subdomain availability check.
 	2. Implement Product model pages (list, create, edit, delete).
