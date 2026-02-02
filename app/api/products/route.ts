@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import prisma from '@/lib/prisma';
+import { requireTenant, verifyStoreOwnership } from '@/lib/tenant';
 
 // GET /api/products - Get all products for a user's store
 export async function GET(req: NextRequest) {
@@ -21,6 +22,12 @@ export async function GET(req: NextRequest) {
     }
 
     const storeId = userWithStore.stores[0].id; // Assuming user has one store
+
+    // Verify the user owns the store
+    const isOwner = await verifyStoreOwnership(storeId, userId);
+    if (!isOwner) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+    }
 
     // Get products for the store
     const products = await prisma.product.findMany({
