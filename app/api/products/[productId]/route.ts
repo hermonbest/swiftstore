@@ -111,6 +111,73 @@ export async function PUT(
   }
 }
 
+// PATCH /api/products/[productId] - Update product details (excluding variants)
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ productId: string }> }
+) {
+  try {
+    const awaitedParams = await params;
+    const { userId } = await auth();
+    const { productId } = awaitedParams;
+
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    if (!productId) {
+      return NextResponse.json({ error: 'Product ID is required' }, { status: 400 });
+    }
+
+    const body = await req.json();
+    const { name, description, images } = body;
+
+    // Validate required fields
+    if (!name && !description && !images) {
+      return NextResponse.json({ error: 'At least one field to update is required' }, { status: 400 });
+    }
+
+    // Verify the user owns the product by checking if it belongs to their store
+    const product = await prisma.product.findUnique({
+      where: { id: productId },
+      include: {
+        store: {
+          select: { userId: true }
+        }
+      }
+    });
+
+    if (!product || product.store.userId !== userId) {
+      return NextResponse.json({ error: 'Unauthorized or product not found' }, { status: 403 });
+    }
+
+    // Update the product
+    const updatedProduct = await prisma.product.update({
+      where: { id: productId },
+      data: {
+        name: name !== undefined ? name : product.name,
+        description: description !== undefined ? description : product.description,
+        images: images !== undefined ? images : product.images,
+      },
+      include: {
+        variants: {
+          select: {
+            id: true,
+            name: true,
+            price: true,
+            stock: true
+          }
+        }
+      }
+    });
+
+    return NextResponse.json(updatedProduct);
+  } catch (e) {
+    console.error("API_PRODUCTS_PATCH_ERROR:", e);
+    return NextResponse.json({ error: 'Server error' }, { status: 500 });
+  }
+}
+
 // DELETE /api/products/[productId] - Delete a product
 export async function DELETE(
   req: NextRequest,

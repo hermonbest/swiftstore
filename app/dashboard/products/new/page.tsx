@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
-import { MockUploadService, UploadedFile } from '@/lib/uploadthing';
+import { MockUploadService, type UploadedFile } from '@/lib/uploadthing';
 
 export default function NewProductPage() {
   const { isLoaded, isSignedIn, user } = useUser();

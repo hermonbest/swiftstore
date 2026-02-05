@@ -26,7 +26,7 @@ export async function GET(
       return NextResponse.json({ storeId: null }, { status: 200 });
     }
 
-    const storeId = userWithStore.stores[0].id;
+    const storeId = userWithStore.stores[0]!.id;
 
     return NextResponse.json({ storeId });
   } catch (e) {

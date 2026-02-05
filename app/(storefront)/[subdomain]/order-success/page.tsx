@@ -1,4 +1,3 @@
-import { SearchParamProps } from 'next/dist/shared/lib/utils';
 import Link from 'next/link';
 
 interface OrderSuccessPageProps {

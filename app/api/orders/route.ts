@@ -2,6 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import prisma from '@/lib/prisma';
 
+interface OrderItemData {
+  variantId: string;
+  quantity: number;
+  priceAtPurchase: any; // Prisma Decimal type
+  variantName: string;
+}
+
 // POST /api/orders - Create a new order and decrement inventory
 export async function POST(req: NextRequest) {
   try {
@@ -43,7 +50,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Verify items exist and have sufficient stock
-    const orderItems = [];
+    const orderItems: OrderItemData[] = [];
     let totalAmount = 0;
 
     for (const item of items) {

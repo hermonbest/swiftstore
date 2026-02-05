@@ -54,6 +54,7 @@ model Product {
   description String
   images      String[]    // Array of Cloudinary/UploadThing URLs
   type        ProductType @default(PHYSICAL)
+  published   Boolean     @default(false) // Products start unpublished
   
   // Formal relationship for variants (Sizes/Colors)
   variants    ProductVariant[]
@@ -72,6 +73,9 @@ model ProductVariant {
   stock     Int      @default(0) // Automatic stock deduction happens here
   
   orderItems OrderItem[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // 3. Marketing & Discounts

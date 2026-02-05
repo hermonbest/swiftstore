@@ -31,7 +31,7 @@ export default async function OrdersPage() {
     );
   }
 
-  const storeId = userWithStore.stores[0].id;
+  const storeId = userWithStore.stores[0]!.id;
 
   // Get orders for the store
   const orders = await prisma.order.findMany({

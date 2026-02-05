@@ -46,7 +46,12 @@ export async function POST(req: NextRequest) {
     }
 
     // Verify items exist and have sufficient stock
-    const orderItems = [];
+    const orderItems: {
+      variantId: string;
+      quantity: number;
+      priceAtPurchase: any; // Prisma Decimal type
+      variantName: string;
+    }[] = [];
     let totalAmount = 0;
 
     for (const item of items) {

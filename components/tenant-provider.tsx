@@ -1,6 +1,7 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import type { ReactNode } from 'react';
 
 interface TenantContextType {
   storeId: string | null;
@@ -12,7 +13,7 @@ interface TenantContextType {
 const TenantContext = createContext<TenantContextType | undefined>(undefined);
 
 interface TenantProviderProps {
-  children: ReactNode;
+  children: React.ReactNode;
   initialStoreId?: string;
   initialSubdomain?: string;
 }
@@ -40,8 +41,8 @@ export const TenantProvider: React.FC<TenantProviderProps> = ({
           
           if (storeIdMeta && subdomainMeta) {
             setContext({
-              storeId: storeIdMeta.getAttribute('content'),
-              subdomain: subdomainMeta.getAttribute('content'),
+              storeId: storeIdMeta.getAttribute('content') || null,
+              subdomain: subdomainMeta.getAttribute('content') || null,
               isLoading: false,
               error: null,
             });
@@ -51,14 +52,14 @@ export const TenantProvider: React.FC<TenantProviderProps> = ({
             const parts = hostname.split('.');
             
             if (parts.length >= 3) {
-              const subdomain = parts[0];
+              const subdomain = parts[0] || null;
               
               // Fetch store ID based on subdomain
               const response = await fetch(`/api/storefront/${subdomain}`);
               if (response.ok) {
                 const data = await response.json();
                 setContext({
-                  storeId: data.id,
+                  storeId: data.id || null,
                   subdomain: subdomain,
                   isLoading: false,
                   error: null,
