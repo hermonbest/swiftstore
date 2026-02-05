@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import { getStoreBySubdomain, getStoreProducts } from '@/lib/tenant';
 import Image from 'next/image';
+import Link from 'next/link';
 
 interface ProductsPageProps {
     params: Promise<{ subdomain: string }>;
@@ -39,15 +40,17 @@ export default async function ProductsPage({ params }: ProductsPageProps) {
             ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                     {products.map((product) => (
-                        <div key={product.id} className="border border-gray-200 rounded-lg overflow-hidden">
-                            <div className="aspect-square relative bg-gray-100">
-                                <Image src={getProductImage(product)} alt={product.name} fill className="object-cover" />
+                        <Link key={product.id} href={`/${subdomain}/products/${product.id}`} className="block">
+                            <div className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow">
+                                <div className="aspect-square relative bg-gray-100">
+                                    <Image src={getProductImage(product)} alt={product.name} fill className="object-cover" />
+                                </div>
+                                <div className="p-4">
+                                    <h3 className="text-lg font-semibold">{product.name}</h3>
+                                    <p className="text-indigo-600 font-bold mt-2">${getDisplayPrice(product)}</p>
+                                </div>
                             </div>
-                            <div className="p-4">
-                                <h3 className="text-lg font-semibold">{product.name}</h3>
-                                <p className="text-indigo-600 font-bold mt-2">${getDisplayPrice(product)}</p>
-                            </div>
-                        </div>
+                        </Link>
                     ))}
                 </div>
             )}

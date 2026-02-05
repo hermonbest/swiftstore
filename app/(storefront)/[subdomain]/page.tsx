@@ -5,7 +5,7 @@ import Link from 'next/link';
 
 /**
  * Storefront Home Page
- * 
+ *
  * Displays the store's products in a grid layout.
  * Accessed via subdomain.swiftstore.com
  */
@@ -88,19 +88,23 @@ export default async function StorefrontPage({ params }: StorefrontPageProps) {
                             >
                                 {/* Product Image */}
                                 <div className="aspect-square relative bg-gray-100">
-                                    <Image
-                                        src={getProductImage(product)}
-                                        alt={product.name}
-                                        fill
-                                        className="object-cover group-hover:scale-105 transition-transform"
-                                    />
+                                    <Link href={`/${subdomain}/products/${product.id}`}>
+                                        <Image
+                                            src={getProductImage(product)}
+                                            alt={product.name}
+                                            fill
+                                            className="object-cover group-hover:scale-105 transition-transform"
+                                        />
+                                    </Link>
                                 </div>
 
                                 {/* Product Info */}
                                 <div className="p-4">
-                                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                                        {product.name}
-                                    </h3>
+                                    <Link href={`/${subdomain}/products/${product.id}`}>
+                                        <h3 className="text-lg font-semibold text-gray-900 mb-2 hover:text-indigo-600">
+                                            {product.name}
+                                        </h3>
+                                    </Link>
 
                                     <p className="text-sm text-gray-600 mb-3 line-clamp-2">
                                         {product.description}
@@ -121,15 +125,17 @@ export default async function StorefrontPage({ params }: StorefrontPageProps) {
                                     </div>
 
                                     {/* Add to Cart Button (Phase 4) */}
-                                    <button
-                                        className="w-full mt-4 bg-indigo-600 text-white py-2 px-4 rounded hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                        disabled={product.variants.every(v => v.stock === 0)}
-                                    >
-                                        {product.variants.every(v => v.stock === 0)
-                                            ? 'Out of Stock'
-                                            : 'Add to Cart'
-                                        }
-                                    </button>
+                                    <Link href={`/${subdomain}/products/${product.id}`}>
+                                        <button
+                                            className="w-full mt-4 bg-indigo-600 text-white py-2 px-4 rounded hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                            disabled={product.variants.every(v => v.stock === 0)}
+                                        >
+                                            {product.variants.every(v => v.stock === 0)
+                                                ? 'Out of Stock'
+                                                : 'View Product'
+                                            }
+                                        </button>
+                                    </Link>
                                 </div>
                             </div>
                         ))}

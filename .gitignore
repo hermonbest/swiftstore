@@ -7,3 +7,6 @@
 /dist/
 /prisma/dev.db
 /generated/prisma
+
+# clerk configuration (can include secrets)
+/.clerk/
